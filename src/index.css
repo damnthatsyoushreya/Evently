@@ -2,10 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
-
+/* Design system with HSL colors, gradients, fonts, shadows, and radius */
 @layer base {
   :root {
     --background: 240 10% 98%;
@@ -104,6 +101,7 @@ All colors MUST be HSL.
   }
 }
 
+/* Global styles */
 @layer base {
   * {
     @apply border-border;
@@ -111,5 +109,31 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    width: 100%;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Make headings and text scale on smaller screens */
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-foreground;
+    word-break: break-word;
+  }
+
+  p {
+    @apply text-foreground;
+    word-wrap: break-word;
+  }
+
+  img, video {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+/* Optional utility classes for responsive spacing */
+@layer utilities {
+  .container {
+    @apply w-11/12 max-w-[1280px] mx-auto px-4;
   }
 }

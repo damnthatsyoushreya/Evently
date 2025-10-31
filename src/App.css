@@ -1,23 +1,33 @@
+/* app.css - Fully Responsive Version */
+
+/* Root container */
 #root {
-  max-width: 1280px;
+  width: 90%;              /* Fluid width */
+  max-width: 1280px;       /* Optional max width for large screens */
   margin: 0 auto;
-  padding: 2rem;
+  padding: 2rem 1rem;      /* Responsive horizontal padding */
   text-align: center;
+  box-sizing: border-box;
 }
 
+/* Logo styling */
 .logo {
-  height: 6em;
+  height: 10vh;            /* Scales with viewport height */
+  max-height: 6em;         /* Optional max height */
   padding: 1.5em;
   will-change: filter;
   transition: filter 300ms;
 }
+
 .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
 }
+
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
 
+/* Logo spinning animation */
 @keyframes logo-spin {
   from {
     transform: rotate(0deg);
@@ -33,10 +43,69 @@
   }
 }
 
+/* Card styling */
 .card {
+  width: 100%;            /* Full width within container */
+  max-width: 400px;       /* Optional max width */
+  margin: 1rem auto;      /* Center cards on small screens */
   padding: 2em;
+  box-sizing: border-box;
+  border-radius: var(--radius);
+  background-color: hsl(var(--card) / 1);
+  color: hsl(var(--card-foreground) / 1);
+  box-shadow: var(--shadow-card);
+  transition: var(--transition-smooth);
 }
 
+/* Read-the-docs link styling */
 .read-the-docs {
   color: #888;
+  text-decoration: underline;
+}
+
+/* Responsive Media Queries */
+
+/* Phones */
+@media (max-width: 600px) {
+  #root {
+    padding: 1rem;
+  }
+  .logo {
+    height: 8vh;
+    max-height: 4em;
+    padding: 1rem;
+  }
+  .card {
+    padding: 1rem;
+  }
+}
+
+/* Tablets */
+@media (min-width: 601px) and (max-width: 1024px) {
+  #root {
+    padding: 2rem;
+  }
+  .logo {
+    height: 10vh;
+    max-height: 5em;
+    padding: 1.5rem;
+  }
+  .card {
+    padding: 1.5rem;
+  }
+}
+
+/* Laptops & Desktops */
+@media (min-width: 1025px) {
+  #root {
+    padding: 3rem;
+  }
+  .logo {
+    height: 12vh;
+    max-height: 6em;
+    padding: 1.5rem;
+  }
+  .card {
+    padding: 2rem;
+  }
 }
