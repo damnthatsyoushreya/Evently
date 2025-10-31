@@ -8,31 +8,41 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
 import { Calendar, Plus, Users } from "lucide-react";
+import {
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
 export default function Dashboard() {
   const [session, setSession] = useState<Session | null>(null);
   const [myEvents, setMyEvents] = useState<any[]>([]);
   const [rsvpedEvents, setRsvpedEvents] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Analytics data
+  const [rsvpData, setRsvpData] = useState<any[]>([]);
+  const [categoryData, setCategoryData] = useState<any[]>([]);
+
   const navigate = useNavigate();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        navigate("/auth");
-      } else {
-        setSession(session);
-      }
+      if (!session) navigate("/auth");
+      else setSession(session);
     });
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!session) {
-        navigate("/auth");
-      } else {
-        setSession(session);
-      }
+      if (!session) navigate("/auth");
+      else setSession(session);
     });
 
     return () => subscription.unsubscribe();
@@ -41,13 +51,14 @@ export default function Dashboard() {
   useEffect(() => {
     if (session) {
       fetchDashboardData();
+      fetchAnalytics();
     }
   }, [session]);
 
+  // Fetch user's events and RSVPs
   const fetchDashboardData = async () => {
     if (!session) return;
 
-    // Fetch user's created events
     const { data: events } = await supabase
       .from("events")
       .select("*")
@@ -67,7 +78,6 @@ export default function Dashboard() {
       setMyEvents(eventsWithRsvpCount);
     }
 
-    // Fetch events user has RSVP'd to
     const { data: rsvps } = await supabase
       .from("rsvps")
       .select("event_id")
@@ -99,19 +109,55 @@ export default function Dashboard() {
     setLoading(false);
   };
 
+  // Fetch analytics data
+  const fetchAnalytics = async () => {
+    const { data: events } = await supabase
+      .from("events")
+      .select("id, title, category");
+
+    const { data: rsvps } = await supabase.from("rsvps").select("event_id");
+
+    if (events && rsvps) {
+      // RSVPs per event
+      const rsvpCounts = events.map((e) => ({
+        name: e.title,
+        value: rsvps.filter((r) => r.event_id === e.id).length,
+      }));
+
+      // Category popularity
+      const categoryCounts = events.reduce((acc, e) => {
+        acc[e.category] = (acc[e.category] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+
+      const formattedCategories = Object.entries(categoryCounts).map(
+        ([name, value]) => ({ name, value })
+      );
+
+      setRsvpData(rsvpCounts);
+      setCategoryData(formattedCategories);
+    }
+  };
+
+  const COLORS = ["#8B5CF6", "#3B82F6", "#F59E0B", "#10B981", "#EC4899"];
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      
+
       <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-8">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8 flex-col md:flex-row gap-4">
           <div>
             <h1 className="text-4xl font-bold mb-2">Dashboard</h1>
             <p className="text-muted-foreground">
               Manage your events and RSVPs
             </p>
           </div>
-          <Button variant="gradient" onClick={() => navigate("/create-event")}>
+          <Button
+            variant="gradient"
+            onClick={() => navigate("/create-event")}
+          >
             <Plus className="w-4 h-4" />
             Create Event
           </Button>
@@ -209,6 +255,45 @@ export default function Dashboard() {
             )}
           </TabsContent>
         </Tabs>
+
+        {/* Analytics Section */}
+        <div className="space-y-8 mt-8">
+          <h2 className="text-2xl font-semibold">📊 Analytics Dashboard</h2>
+
+          {/* RSVPs per Event */}
+          <div className="bg-muted p-4 rounded-xl">
+            <h3 className="mb-3 font-medium">RSVPs per Event</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={rsvpData}>
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="value" fill="#8B5CF6" radius={[8, 8, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Category Popularity */}
+          <div className="bg-muted p-4 rounded-xl">
+            <h3 className="mb-3 font-medium">Popular Categories</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={categoryData}
+                  dataKey="value"
+                  nameKey="name"
+                  outerRadius={120}
+                  label
+                >
+                  {categoryData.map((_, i) => (
+                    <Cell key={i} fill={COLORS[i % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
       </div>
     </div>
   );
