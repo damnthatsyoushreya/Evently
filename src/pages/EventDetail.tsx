@@ -30,9 +30,8 @@ export default function EventDetail() {
 
   const addToCalendar = (event: any) => {
     const start = formatDateForCalendar(event.event_date);
-    const end = formatDateForCalendar(
-      new Date(new Date(event.event_date).getTime() + 2 * 60 * 60 * 1000) // +2 hours
-    );
+    const endDate = new Date(new Date(event.event_date).getTime() + 2 * 60 * 60 * 1000); // +2 hours
+    const end = formatDateForCalendar(endDate);
 
     const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
       event.title
@@ -279,14 +278,17 @@ export default function EventDetail() {
                       {hasRsvped ? "Cancel RSVP" : "RSVP to Event"}
                     </Button>
 
+                    {/* Add to Google Calendar */}
                     <Button
                       variant="outline"
                       className="w-full"
                       onClick={() => addToCalendar(event)}
+                      title="Opens in Google Calendar"
                     >
                       📅 Add to Google Calendar
                     </Button>
 
+                    {/* Share Event */}
                     <Button
                       variant="secondary"
                       className="w-full"
