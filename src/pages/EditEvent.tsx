@@ -7,6 +7,16 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+// Define allowed event categories
+type EventCategory =
+  | "workshop"
+  | "webinar"
+  | "hackathon"
+  | "conference"
+  | "meetup"
+  | "social"
+  | "other";
+
 export default function EditEvent() {
   const { id } = useParams();
   const navigate = useNavigate();
