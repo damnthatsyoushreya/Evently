@@ -131,7 +131,7 @@ export default function EventDetail() {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      
+
       <div className="container mx-auto px-4 py-8">
         <Button variant="ghost" asChild className="mb-4">
           <Link to="/events">
@@ -164,10 +164,15 @@ export default function EventDetail() {
                 </div>
                 {isOrganizer && (
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigate(`/edit-event/${event.id}`)}
+                    >
                       <Edit className="w-4 h-4" />
                       Edit
                     </Button>
+
                     <Button variant="destructive" size="sm" onClick={handleDelete}>
                       <Trash2 className="w-4 h-4" />
                       Delete
