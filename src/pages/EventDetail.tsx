@@ -20,6 +20,48 @@ export default function EventDetail() {
   const [session, setSession] = useState<Session | null>(null);
   const [isOrganizer, setIsOrganizer] = useState(false);
 
+  // -----------------------------
+  // Google Calendar & Share Functions
+  // -----------------------------
+  const formatDateForCalendar = (date: string | Date) => {
+    const d = typeof date === "string" ? new Date(date) : date;
+    return d.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+  };
+
+  const addToCalendar = (event: any) => {
+    const start = formatDateForCalendar(event.event_date);
+    const end = formatDateForCalendar(
+      new Date(new Date(event.event_date).getTime() + 2 * 60 * 60 * 1000) // +2 hours
+    );
+
+    const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
+      event.title
+    )}&dates=${start}/${end}&details=${encodeURIComponent(
+      event.description
+    )}&location=${encodeURIComponent(event.location)}`;
+
+    window.open(calendarUrl, "_blank");
+  };
+
+  const shareEvent = async (event: any) => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: event.title,
+          text: "Check out this event on Evently!",
+          url: window.location.href,
+        });
+      } catch (err) {
+        console.error("Error sharing", err);
+      }
+    } else {
+      toast.info("Sharing is supported on mobile browsers only!");
+    }
+  };
+
+  // -----------------------------
+  // Auth & Fetching
+  // -----------------------------
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
@@ -106,6 +148,9 @@ export default function EventDetail() {
     }
   };
 
+  // -----------------------------
+  // Loading & Error States
+  // -----------------------------
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -128,6 +173,9 @@ export default function EventDetail() {
     );
   }
 
+  // -----------------------------
+  // Render
+  // -----------------------------
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -222,13 +270,31 @@ export default function EventDetail() {
                 </div>
 
                 {!isOrganizer && (
-                  <Button
-                    className="w-full"
-                    variant={hasRsvped ? "outline" : "gradient"}
-                    onClick={handleRSVP}
-                  >
-                    {hasRsvped ? "Cancel RSVP" : "RSVP to Event"}
-                  </Button>
+                  <>
+                    <Button
+                      className="w-full"
+                      variant={hasRsvped ? "outline" : "gradient"}
+                      onClick={handleRSVP}
+                    >
+                      {hasRsvped ? "Cancel RSVP" : "RSVP to Event"}
+                    </Button>
+
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => addToCalendar(event)}
+                    >
+                      📅 Add to Google Calendar
+                    </Button>
+
+                    <Button
+                      variant="secondary"
+                      className="w-full"
+                      onClick={() => shareEvent(event)}
+                    >
+                      🔗 Share Event
+                    </Button>
+                  </>
                 )}
               </CardContent>
             </Card>
