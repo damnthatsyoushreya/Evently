@@ -17,15 +17,24 @@ type EventCategory =
   | "social"
   | "other";
 
+interface EventForm {
+  title: string;
+  description: string;
+  location: string;
+  category: EventCategory;
+  event_date: string;
+  image_url: string;
+}
+
 export default function EditEvent() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<EventForm>({
     title: "",
     description: "",
     location: "",
-    category: "",
+    category: "workshop",
     event_date: "",
     image_url: "",
   });
@@ -36,13 +45,22 @@ export default function EditEvent() {
       if (error) {
         toast.error("Error loading event");
       } else if (data) {
-        setForm(data);
+        setForm({
+          title: data.title || "",
+          description: data.description || "",
+          location: data.location || "",
+          category: (data.category as EventCategory) || "workshop",
+          event_date: data.event_date || "",
+          image_url: data.image_url || "",
+        });
       }
     };
     fetchEvent();
   }, [id]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
@@ -55,7 +73,7 @@ export default function EditEvent() {
         title: form.title,
         description: form.description,
         location: form.location,
-        category: form.category,
+        category: form.category as EventCategory, // ✅ Fixed TypeScript issue here
         event_date: form.event_date,
         image_url: form.image_url,
       })
@@ -97,12 +115,24 @@ export default function EditEvent() {
             onChange={handleChange}
             placeholder="Location"
           />
-          <Input
+
+          {/* ✅ Dropdown for category (prevents invalid values) */}
+          <select
             name="category"
             value={form.category}
             onChange={handleChange}
-            placeholder="Category"
-          />
+            className="w-full border rounded-md p-2 bg-background text-foreground"
+            required
+          >
+            <option value="workshop">Workshop</option>
+            <option value="webinar">Webinar</option>
+            <option value="hackathon">Hackathon</option>
+            <option value="conference">Conference</option>
+            <option value="meetup">Meetup</option>
+            <option value="social">Social</option>
+            <option value="other">Other</option>
+          </select>
+
           <Input
             type="date"
             name="event_date"
